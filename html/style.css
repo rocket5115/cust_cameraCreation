@@ -67,3 +67,27 @@ html {
     background-image: url('./arrow.png');
     rotate: 180deg;
 }
+
+#mode {
+    position: absolute;
+    opacity: 0.0;
+    top: 15%;
+    left: 40%;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    text-align: center;
+    font-size: 24px;
+}
+
+#direct {
+    position: absolute;
+    opacity: 0.0;
+    top: 30%;
+    left: 0%;
+    width: 15.5%;
+    height: 25%;
+    background-color: rgba(20, 3, 3, 0.943);
+    display: grid;
+    grid-auto-flow: row;
+    padding-top: 10px;
+}
