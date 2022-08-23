@@ -1,4 +1,6 @@
 var tasks = [];
+var anims = [];
+var anim = 0;
 
 window.addEventListener('message', function(event) {
     let item = event.data;
@@ -28,7 +30,7 @@ window.addEventListener('message', function(event) {
         for(let i=0;i<data.length;i++) {
             if((i+1)==data.length) {
                 let left = (document.getElementById('arrow').style.rotate === '180deg' || document.getElementById('arrow').style.rotate=='');
-                retval = retval + document.getElementById(data[i]).textContent + ',' + (left&&'1'||'0')+','+document.getElementById('ms').textContent+';';
+                retval = retval + document.getElementById(data[i]).textContent + ',' + (left&&'1'||'0')+','+document.getElementById('ms').textContent+','+(anim+1)+';';
             } else {
                 retval = retval + document.getElementById(data[i]).textContent + ',';
             };
@@ -44,9 +46,11 @@ window.addEventListener('message', function(event) {
     };
     if(item.t==='s') {
         if(item.r===1) {
-            document.getElementById('after').style.opacity = '1.0';
+            document.getElementById('direct').style.opacity = '1.0';
+            document.getElementById('mode').style.opacity = '1.0';
         } else {
-            document.getElementById('after').style.opacity = '0';
+            document.getElementById('direct').style.opacity = '0';
+            document.getElementById('mode').style.opacity = '0';
         };
     };
     if(item.t==='e') {
@@ -74,6 +78,18 @@ window.addEventListener('message', function(event) {
     };
     if(item.s=='s') {
         document.getElementById('speed').textContent = item.d;
+    };
+    if(item.i=='i') {
+        anims = item.d;
+        document.getElementById('effect').innerHTML = (anim+1) + '/' + anims.length + '<br>'+anims[anim];
+    };
+    if(item.i=='u') {
+        anim = item.d-1;
+        document.getElementById('effect').innerHTML = (anim+1) + '/' + anims.length + '<br>'+anims[anim];
+    };
+    if(item.x=='x') {
+        anim = item.d-1;
+        document.getElementById('effect').innerHTML = (anim+1) + '/' + anims.length + '<br>'+anims[anim];
     };
 });
 
