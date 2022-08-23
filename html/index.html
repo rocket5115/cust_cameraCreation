@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+        <title>cust_*</title>
+        <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <container id="container">
+            <div class="pointer" id="rotation">Rotation:<br><div class="pointer" id="rotx">N/a</div><div class="pointer" id="roty">N/a</div><div class="pointer" id="rotz">N/a</div></div>
+            <div class="pointer" id="coordinates">Coords:<br><div class="pointer" id="corx">N/a</div><div class="pointer" id="cory">N/a</div><div class="pointer" id="corz">N/a</div></div>
+        </container>
+        <container id="keys">
+            <div class="pointer">Add [ENTER]</div>
+            <div class="pointer">Remove [DELETE]</div>
+            <div class="pointer">Export [INSERT]</div>
+            <div class="pointer">Change ms [M3|N+/N-]: <span id="ms">1000</span></div>
+            <div class="pointer">Speed: <span id="speed">?</span></div>
+            <div class="pointer" id="tasks">Current Tasks: <span id="span">?</span><div id="after"></div></div>
+        </container>
+        <div id="arrow"></div>
+        <script type="text/javascript" src="./main.js"></script>
+    </body>
+</html>
