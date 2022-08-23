@@ -43,6 +43,94 @@ local enum = {
 }
 
 local velocity = 3
+
+local animations = {
+    'none', --used to cancel animation
+    'SwitchHUDIn',
+    'SwitchHUDOut',
+    'FocusIn',
+    'FocusOut',
+    'MinigameEndNeutral',
+    'MinigameEndTrevor',
+    'MinigameEndFranklin',
+    'MinigameEndMichael',
+    'MinigameTransitionOut',
+    'MinigameTransitionIn',
+    'SwitchShortNeutralIn',
+    'SwitchShortFranklinIn',
+    'SwitchShortTrevorIn',
+    'SwitchShortMichaelIn',
+    'SwitchOpenMichaelIn',
+    'SwitchOpenFranklinIn',
+    'SwitchOpenTrevorIn',
+    'SwitchHUDMichaelOut',
+    'SwitchHUDFranklinOut',
+    'SwitchHUDTrevorOut',
+    'SwitchShortFranklinMid',
+    'SwitchShortMichaelMid',
+    'SwitchShortTrevorMid',
+    'DeathFailOut',
+    'CamPushInNeutral',
+    'CamPushInFranklin',
+    'CamPushInMichael',
+    'CamPushInTrevor',
+    'SwitchOpenMichaelIn',
+    'SwitchSceneFranklin',
+    'SwitchSceneTrevor',
+    'SwitchSceneMichael',
+    'SwitchSceneNeutral',
+    'MP_Celeb_Win',
+    'MP_Celeb_Win_Out',
+    'MP_Celeb_Lose',
+    'MP_Celeb_Lose_Out',
+    'DeathFailNeutralIn',
+    'DeathFailMPDark',
+    'DeathFailMPIn',
+    'MP_Celeb_Preload_Fade',
+    'PeyoteEndOut',
+    'PeyoteEndIn',
+    'PeyoteIn',
+    'PeyoteOut',
+    'MP_race_crash',
+    'SuccessFranklin',
+    'SuccessTrevor',
+    'SuccessMichael',
+    'DrugsMichaelAliensFightIn',
+    'DrugsMichaelAliensFight',
+    'DrugsMichaelAliensFightOut',
+    'DrugsTrevorClownsFightIn',
+    'DrugsTrevorClownsFight',
+    'DrugsTrevorClownsFightOut',
+    'HeistCelebPass',
+    'HeistCelebPassBW',
+    'HeistCelebEnd',
+    'HeistCelebToast',
+    'MenuMGHeistIn',
+    'MenuMGTournamentIn',
+    'MenuMGSelectionIn',
+    'ChopVision',
+    'DMT_flight_intro',
+    'DMT_flight',
+    'DrugsDrivingIn',
+    'DrugsDrivingOut',
+    'SwitchOpenNeutralFIB5',
+    'HeistLocate',
+    'MP_job_load',
+    'RaceTurbo',
+    'MP_intro_logo',
+    'HeistTripSkipFade',
+    'MenuMGHeistOut',
+    'MP_corona_switch',
+    'MenuMGSelectionTint',
+    'SuccessNeutral',
+    'ExplosionJosh3',
+    'SniperOverlay',
+    'RampageOut',
+    'Rampage',
+    'Dont_tazeme_bro',
+    'DeathFailOut'
+}
+
 local functions = {
     ['camera'] = function(s,args)
         incam = not incam
@@ -115,11 +203,6 @@ local functions = {
                         SetCamRot(data['cam'], camRot.x-types[enum[velocity]], camRot.y, camRot.z, 2) 
                         SendNUIMessage({t='r',d={{r='x',v=camRot.x-types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
                     end
-                    if IsDisabledControlPressed(1, 37) then
-                        SendNUIMessage({t='s',r=1})
-                    else
-                        SendNUIMessage({t='s',r=0})
-                    end
                     if (IsControlPressed(1, 177) or IsControlPressed(1, 200)) or not incam then
                         SendNUIMessage({status = false})
                         DetachCam(data['cam'])
@@ -137,6 +220,9 @@ local functions = {
     end
 }
 
+local show = false
+local cureffect = 1
+
 Citizen.CreateThread(function()
     while true do
         if not incam then
@@ -153,10 +239,34 @@ Citizen.CreateThread(function()
             if IsControlJustReleased(1, 121) then
                 SendNUIMessage({t='e'})
             end
-            if IsControlJustReleased(1,174) then
-                SendNUIMessage({t='x',d='a'})
-            elseif IsControlJustReleased(1, 175) then
-                SendNUIMessage({t='x',d='d'})
+            if not show then
+                if IsControlJustReleased(1,174) then
+                    SendNUIMessage({t='x',d='a'})
+                elseif IsControlJustReleased(1, 175) then
+                    SendNUIMessage({t='x',d='d'})
+                end
+            else
+                if IsControlJustReleased(1,174) then
+                    local last = cureffect
+                    if not animations[cureffect-1] then
+                        cureffect = #animations
+                    else
+                        cureffect = cureffect-1
+                    end
+                    AnimpostfxStop(animations[last])
+                    AnimpostfxPlay(animations[cureffect], 1000, true)
+                    SendNUIMessage({x='x',d=cureffect})
+                elseif IsControlJustReleased(1, 175) then
+                    local last = cureffect
+                    if not animations[cureffect+1] then
+                        cureffect = 1
+                    else
+                        cureffect = cureffect+1
+                    end
+                    AnimpostfxStop(animations[last])
+                    AnimpostfxPlay(animations[cureffect], 1000, true)
+                    SendNUIMessage({x='x',d=cureffect})
+                end
             end
             if IsControlPressed(1, 96) then
                 SendNUIMessage({t='u'})
@@ -179,6 +289,14 @@ Citizen.CreateThread(function()
                 end
                 SendNUIMessage({s='s',d=enum[velocity]..' - '..velocity})
             end
+            if IsDisabledControlJustPressed(1, 37) then
+                show = not show
+                if show then
+                    SendNUIMessage({t='s',r=1})
+                else
+                    SendNUIMessage({t='s',r=0})
+                end
+            end
         end
     end
 end)
@@ -187,6 +305,7 @@ local initialized = false
 
 Citizen.CreateThread(function()
     local ped = PlayerPedId()
+    AnimpostfxStopAll()
     ResetEntityAlpha(ped)
     SetEntityCollision(ped, true, true)
     SetEntityInvincible(ped, false)
@@ -194,6 +313,7 @@ Citizen.CreateThread(function()
     while not initialized do
         Citizen.Wait(10)
     end
+    SendNUIMessage({i='i',d=animations})
     rc('cam',functions['camera'])
 end)
 
@@ -260,7 +380,7 @@ local function execute(...)
     end
     for i=1, #n, 1 do
         if n[i].name == 'ccm:' then
-            retval = retval..a[i][4]..','..a[i][5]..','..a[i][6]..','..a[i][1]..','..a[i][2]..','..a[i][3]..',90.0,false,0)\n$TSetCamActive(cam, true)\n    RenderScriptCams(true, false, 1, true, true)\n'
+            retval = retval..a[i][4]..','..a[i][5]..','..a[i][6]..','..a[i][1]..','..a[i][2]..','..a[i][3]..',90.0,false,0)\n$Tlocal lasteffect=""\n$TSetCamActive(cam, true)\n$TRenderScriptCams(true, false, 1, true, true)\n'..(animations[a[i][9]]~='none' and '$TStartScreenEffect("'..animations[a[i][9]]..'")\n$Tlasteffect = "'..animations[a[i][9]]..'"\n' or '\n')
         else
             if a[i-1] and a[i] then
                 local vec = vector3(a[i-1][1], a[i-1][2], a[i-1][3])
@@ -350,12 +470,13 @@ local function execute(...)
                 retval = retval:gsub('$X', vec.x)
                 retval = retval:gsub('$Y', vec.y)
                 retval = retval:gsub('$Z', vec.z)
-                retval = retval .. '$T$Tx2=x2+'..x..' y2=y2+'..y..' z2=z2+'..z..'\n$T$TSetCamCoord(cam,x2,y2,z2)\n$Tend\n'
+                local an = ((a[i+1]~=nil and a[i+1][9]~=nil)and a[i+1][9]~=a[i][9])
+                retval = retval .. '$T$Tx2=x2+'..x..' y2=y2+'..y..' z2=z2+'..z..'\n$T$TSetCamCoord(cam,x2,y2,z2)\n$Tend\n'..(an and '$TStartScreenEffect("'..animations[a[i+1][9]]..'")\n$TStopScreenEffect(lasteffect)\n$Tlasteffect="'..animations[a[i+1][9]]..'"\n' or '')
             end
         end
     end
+    retval = retval .. '$TDetachCam(cam)\n$TDestroyCam(cam)\n$TDestroyAllCams(true)\n$TRenderScriptCams(false, false, 1, false, false)\n$TStopAllScreenEffects()\nend)'
     retval = retval:gsub('$T', '    ')
-    retval = retval .. 'end)'
     if save then
         TriggerServerEvent('cust:save', retval)
     end
