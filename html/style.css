@@ -79,6 +79,17 @@ html {
     font-size: 24px;
 }
 
+#exp {
+    position: absolute;
+    top: 25%;
+    left: 40%;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    text-align: center;
+    font-size: 24px;
+    color: red;
+}
+
 #direct {
     position: absolute;
     opacity: 0.0;
@@ -90,4 +101,29 @@ html {
     display: grid;
     grid-auto-flow: row;
     padding-top: 10px;
+}
+
+#timeline {
+    position: absolute;
+    opacity: 0.0;
+    top: 82.5%;
+    left: 10%;
+    height: 17.5%;
+    width: 80%;
+    background-color: rgba(24, 4, 4, 0.943);
+    display: grid;
+    grid-auto-flow: column;
+    margin-bottom: 5px;
+    grid-gap: 5px;
+    row-gap: 5px;
+}
+
+.timeline-data {
+    width: auto;
+    max-width: 100%;
+    min-width: 50%;
+    background-color: rgba(58, 1, 1, 0.834);
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
 }
