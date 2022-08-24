@@ -131,6 +131,9 @@ local animations = {
     'DeathFailOut'
 }
 
+local show = false
+local inpreview = false
+
 local functions = {
     ['camera'] = function(s,args)
         incam = not incam
@@ -195,24 +198,36 @@ local functions = {
                         SetCamRot(data['cam'], camRot.x, camRot.y-types[enum[velocity]], camRot.z, 2)
                         SendNUIMessage({t='r',d={{r='x',v=camRot.x},{r='y',v=camRot.y-types[enum[velocity]]},{r='z',v=camRot.z}}})
                     elseif IsControlPressed(1, 172) then
-                        local camRot = GetCamRot(data['cam'], 2)
-                        SetCamRot(data['cam'], camRot.x+types[enum[velocity]], camRot.y, camRot.z, 2)
-                        SendNUIMessage({t='r',d={{r='x',v=camRot.x+types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                        if not show then
+                            local camRot = GetCamRot(data['cam'], 2)
+                            SetCamRot(data['cam'], camRot.x+types[enum[velocity]], camRot.y, camRot.z, 2)
+                            SendNUIMessage({t='r',d={{r='x',v=camRot.x+types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                        end
                     elseif IsControlPressed(1, 173) then
-                        local camRot = GetCamRot(data['cam'], 2)
-                        SetCamRot(data['cam'], camRot.x-types[enum[velocity]], camRot.y, camRot.z, 2) 
-                        SendNUIMessage({t='r',d={{r='x',v=camRot.x-types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                        if not show then
+                            local camRot = GetCamRot(data['cam'], 2)
+                            SetCamRot(data['cam'], camRot.x-types[enum[velocity]], camRot.y, camRot.z, 2) 
+                            SendNUIMessage({t='r',d={{r='x',v=camRot.x-types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                        end
                     end
-                    if (IsControlPressed(1, 177) or IsControlPressed(1, 200)) or not incam then
-                        SendNUIMessage({status = false})
-                        DetachCam(data['cam'])
-                        DestroyCam(data['cam'], true)
-                        DestroyAllCams(true)
-                        RenderScriptCams(false, false, 1, false, false)
-                        ResetEntityAlpha(data['player'])
-                        SetEntityCollision(data['player'], true, true)
-                        SetPlayerInvincible(data['playerID'], false)
-                        break
+                    if (IsDisabledControlJustPressed(1, 177)) or not incam then
+
+                        if not inpreview then
+                            incam = false
+                            SendNUIMessage({status = false})
+                            DetachCam(data['cam'])
+                            DestroyCam(data['cam'], true)
+                            DestroyAllCams(true)
+                            RenderScriptCams(false, false, 1, false, false)
+                            ResetEntityAlpha(data['player'])
+                            SetEntityCollision(data['player'], true, true)
+                            SetPlayerInvincible(data['playerID'], false)
+                            break
+                        else
+                            SetCamActive(data['cam'], true)
+                            RenderScriptCams(true, false, 1, true, true)
+                            inpreview = false
+                        end
                     end
                 end
             end)
@@ -220,8 +235,8 @@ local functions = {
     end
 }
 
-local show = false
 local cureffect = 1
+local menu = false
 
 Citizen.CreateThread(function()
     while true do
@@ -230,11 +245,16 @@ Citizen.CreateThread(function()
         else
             Citizen.Wait(1)
             DisableControlAction(1, 37, true)
+            DisableControlAction(1, 177, true)
             if IsControlJustReleased(1, 191) then
                 SendNUIMessage({t='c'})
             end
             if IsControlJustReleased(1, 178) then
-                SendNUIMessage({t='d'})
+                if not show then
+                    SendNUIMessage({t='d'})
+                else
+                    SendNUIMessage({t='d2'})
+                end
             end
             if IsControlJustReleased(1, 121) then
                 SendNUIMessage({t='e'})
@@ -266,6 +286,22 @@ Citizen.CreateThread(function()
                     AnimpostfxStop(animations[last])
                     AnimpostfxPlay(animations[cureffect], 1000, true)
                     SendNUIMessage({x='x',d=cureffect})
+                end
+            end
+            if show then
+                if IsControlJustPressed(1, 173) then
+                    SendNUIMessage({u='d'})
+                end
+                if IsControlJustPressed(1, 172) then
+                    SendNUIMessage({u='u'})
+                end
+                if IsControlJustPressed(1, 212) then
+                    menu = not menu
+                    if not menu then
+                        SendNUIMessage({h=menu})
+                    else
+                        SendNUIMessage({h=menu})
+                    end
                 end
             end
             if IsControlPressed(1, 96) then
@@ -325,7 +361,7 @@ Citizen.CreateThread(function()
     until i==3
     initialized = true
 end)
-
+--Execution of string
 function troc(str)
     local res = {}
     str = string.sub(str, 2, string.len(str))
@@ -380,7 +416,7 @@ local function execute(...)
     end
     for i=1, #n, 1 do
         if n[i].name == 'ccm:' then
-            retval = retval..a[i][4]..','..a[i][5]..','..a[i][6]..','..a[i][1]..','..a[i][2]..','..a[i][3]..',90.0,false,0)\n$Tlocal lasteffect=""\n$TSetCamActive(cam, true)\n$TRenderScriptCams(true, false, 1, true, true)\n'..(animations[a[i][9]]~='none' and '$TStartScreenEffect("'..animations[a[i][9]]..'")\n$Tlasteffect = "'..animations[a[i][9]]..'"\n' or '\n')
+            retval = retval..a[i][4]..','..a[i][5]..','..a[i][6]..','..a[i][1]..','..a[i][2]..','..a[i][3]..',90.0,false,0)\n$Tlocal lasteffect=""\n$TSetCamActive(cam, true)\n$TRenderScriptCams(true, false, 1, true, true)'..(animations[a[i][9]]~='none' and '$TStartScreenEffect("'..animations[a[i][9]]..'")\n$Tlasteffect = "'..animations[a[i][9]]..'"\n' or '\n')
         else
             if a[i-1] and a[i] then
                 local vec = vector3(a[i-1][1], a[i-1][2], a[i-1][3])
@@ -389,51 +425,59 @@ local function execute(...)
                 if a[i][7] == 1 then
                     local x,y,z
                     if vec.z < vec2.z then
-                        z = (vec2.z-vec.z)/t
+                        z = (vec2.z-vec.z)
                     elseif vec2.z < vec.z then
-                        z = ((360.0-vec.z)+vec2.z)/t
+                        z = ((360.0-vec.z)+vec2.z)
                     else
                         z = 0.0
                     end
                     if vec.y < vec2.y then
-                        y = (vec2.y-vec.y)/t
+                        y = (vec2.y-vec.y)
                     elseif vec2.y < vec.y then
-                        y = ((360.0-vec.y)+vec2.y)/t
+                        y = ((360.0-vec.y)+vec2.y)
                     else
                         y = 0.0
                     end
                     if vec.x < vec2.x then
-                        x = (vec2.x-vec.x)/t
+                        x = (vec2.x-vec.x)
                     elseif vec2.x < vec.x then
-                        x = ((360.0-vec.x)+vec2.x)/t
+                        x = ((360.0-vec.x)+vec2.x)
                     else
                         x = 0.0
                     end
-                    retval = retval .. ('$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z \n$Tfor i=1,%s do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(vec.x,vec.y,vec.z,t,'+'..x,'+'..y,'+'..z, templates['+']:format('x', 'x'), templates['+']:format('y', 'y'), templates['+']:format('z', 'z'))
+                    if x ~= 0.0 or y ~= 0.0 or z ~= 0.0 then
+                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'+('..x..'/time)','+('..y..'/time)','+('..z..'/time)', templates['+']:format('x', 'x'), templates['+']:format('y', 'y'), templates['+']:format('z', 'z'))
+                    else
+                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do\n$T$TWait(1)\n'):format(t)
+                    end
                 elseif a[i][7] == 0 then
                     local x,y,z
                     if vec.z < vec2.z then
-                        z = ((360.0-vec2.z)+vec.z)/t
+                        z = ((360.0-vec2.z)+vec.z)
                     elseif vec2.z < vec.z then
-                        z = (vec.z-vec2.z)/t
+                        z = (vec.z-vec2.z)
                     else
                         z = 0.0
                     end
                     if vec.y < vec2.y then
-                        y = ((360.0-vec2.y)+vec.y)/t
+                        y = ((360.0-vec2.y)+vec.y)
                     elseif vec2.y < vec.y then
-                        y = (vec.y-vec2.y)/t
+                        y = (vec.y-vec2.y)
                     else
                         y = 0.0
                     end
                     if vec.x < vec2.x then
-                        x = ((360.0-vec2.x)+vec.x)/t
+                        x = ((360.0-vec2.x)+vec.x)
                     elseif vec2.x < vec.x then
-                        x = (vec.x-vec2.x)/t
+                        x = (vec.x-vec2.x)
                     else
                         x = 0.0
                     end
-                    retval = retval .. ('$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z $T\n$Tfor i=1,%s do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(vec.x,vec.y,vec.z,t,'- '..x,'- '..y,'- '..z, templates['-']:format('x', 'x'), templates['-']:format('y', 'y'), templates['-']:format('z', 'z'))
+                    if x ~= 0.0 or y ~= 0.0 or z ~= 0.0 then
+                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z $T\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'-('..x..'/time)','-('..y..'/time)','-('..z..'/time)', templates['-']:format('x', 'x'), templates['-']:format('y', 'y'), templates['-']:format('z', 'z'))
+                    else
+                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do\n$T$TWait(1)\n'):format(t)
+                    end
                 end
                 local vec = vector3(a[i-1][4], a[i-1][5], a[i-1][6])
                 local vec2 = vector3(a[i][4], a[i][5], a[i][6])
@@ -441,41 +485,46 @@ local function execute(...)
                 local p4, p5, p6 = (string.sub(vec2.x, 1, 1)=='-'),(string.sub(vec2.y, 1, 1)=='-'),(string.sub(vec2.z, 1, 1)=='-')
                 local x,y,z
                 if p1 and p4 then
-                    x = (tonumber(string.sub(vec.x, 2, string.len(vec.x)))-tonumber(string.sub(vec2.x, 2, string.len(vec2.x))))/t
+                    x = (tonumber(string.sub(vec.x, 2, string.len(vec.x)))-tonumber(string.sub(vec2.x, 2, string.len(vec2.x))))
                 elseif p1 and not p4 then
-                    x = ((tonumber(string.sub(vec.x, 2, string.len(vec.x))))+vec2.x)/t
+                    x = ((tonumber(string.sub(vec.x, 2, string.len(vec.x))))+vec2.x)
                 elseif not p1 and p4 then
-                    x = tonumber('-'..(tonumber(string.sub(vec2.x, 2, string.len(vec2.x)))+vec.x))/t
+                    x = tonumber('-'..(tonumber(string.sub(vec2.x, 2, string.len(vec2.x)))+vec.x))
                 else
-                    x = (vec2.x-vec.x)/t
+                    x = (vec2.x-vec.x)
                 end
                 if p2 and p5 then
-                    y = (tonumber(string.sub(vec.y, 2, string.len(vec.y)))-tonumber(string.sub(vec2.y, 2, string.len(vec2.y))))/t
+                    y = (tonumber(string.sub(vec.y, 2, string.len(vec.y)))-tonumber(string.sub(vec2.y, 2, string.len(vec2.y))))
                 elseif p2 and not p5 then
-                    y = ((tonumber(string.sub(vec.y, 2, string.len(vec.y))))+vec2.y)/t
+                    y = ((tonumber(string.sub(vec.y, 2, string.len(vec.y))))+vec2.y)
                 elseif not p2 and p5 then
-                    y = tonumber('-'..(tonumber(string.sub(vec2.y, 2, string.len(vec2.y)))+vec.y))/t
+                    y = tonumber('-'..(tonumber(string.sub(vec2.y, 2, string.len(vec2.y)))+vec.y))
                 else
-                    y = (vec2.y-vec.y)/t
+                    y = (vec2.y-vec.y)
                 end
                 if p3 and p6 then
-                    z = (tonumber(string.sub(vec.z, 2, string.len(vec.z)))-tonumber(string.sub(vec2.z, 2, string.len(vec2.z))))/t
+                    z = (tonumber(string.sub(vec.z, 2, string.len(vec.z)))-tonumber(string.sub(vec2.z, 2, string.len(vec2.z))))
                 elseif p3 and not p6 then
-                    z = ((tonumber(string.sub(vec.z, 2, string.len(vec.z))))+vec2.z)/t
+                    z = ((tonumber(string.sub(vec.z, 2, string.len(vec.z))))+vec2.z)
                 elseif not p3 and p6 then
-                    z = tonumber('-'..(tonumber(string.sub(vec2.z, 2, string.len(vec2.z)))+vec.z))/t
+                    z = tonumber('-'..(tonumber(string.sub(vec2.z, 2, string.len(vec2.z)))+vec.z))
                 else
-                    z = (vec2.z-vec.z)/t
+                    z = (vec2.z-vec.z)
                 end
-                retval = retval:gsub('$X', vec.x)
-                retval = retval:gsub('$Y', vec.y)
-                retval = retval:gsub('$Z', vec.z)
-                local an = ((a[i+1]~=nil and a[i+1][9]~=nil)and a[i+1][9]~=a[i][9])
-                retval = retval .. '$T$Tx2=x2+'..x..' y2=y2+'..y..' z2=z2+'..z..'\n$T$TSetCamCoord(cam,x2,y2,z2)\n$Tend\n'..(an and '$TStartScreenEffect("'..animations[a[i+1][9]]..'")\n$TStopScreenEffect(lasteffect)\n$Tlasteffect="'..animations[a[i+1][9]]..'"\n' or '')
+                if x ~= 0.0 or y ~= 0.0 or z ~= 0.0 then
+                    retval = retval:gsub('$X', vec.x)
+                    retval = retval:gsub('$Y', vec.y)
+                    retval = retval:gsub('$Z', vec.z)
+                    local an = ((a[i+1]~=nil and a[i+1][9]~=nil)and a[i+1][9]~=a[i][9])
+                    retval = retval .. '$T$Tx2=x2+('..x..'/time) y2=y2+('..y..'/time) z2=z2+('..z..'/time)\n$T$TSetCamCoord(cam,x2,y2,z2)\n$Tend\n'..(an and '$TStartScreenEffect("'..animations[a[i+1][9]]..'")\n$TStopScreenEffect(lasteffect)\n$Tlasteffect="'..animations[a[i+1][9]]..'"\n' or '')
+                else
+                    retval = retval:gsub('$Tlocal x2,y2,z2=$X,$Y,$Z\n', '')
+                    retval = retval .. '$Tend\n'
+                end
             end
         end
     end
-    retval = retval .. '$TDetachCam(cam)\n$TDestroyCam(cam)\n$TDestroyAllCams(true)\n$TRenderScriptCams(false, false, 1, false, false)\n$TStopAllScreenEffects()\nend)'
+    retval = retval .. '$TDetachCam(cam)\n$TDestroyCam(cam)\n$TRenderScriptCams(false, false, 1, false, false)\n$TStopAllScreenEffects()\nend)'
     retval = retval:gsub('$T', '    ')
     if save then
         TriggerServerEvent('cust:save', retval)
@@ -485,6 +534,25 @@ local function execute(...)
     end
     return retval
 end
+
+RegisterNUICallback('execute', function(data)
+    SendNUIMessage({exp='show',data='Creating and executing camera...',time=2000})
+    local p1 = data.data[1]:gsub('cmp:', 'ccm:')
+    p1 = '{'..p1..data.data[2]:gsub(';','')..'}'
+    local name,scen = troc(p1)
+    local ret = execute(name,scen,false,false)
+    ret = ret:gsub('    RenderScriptCams%(false, false, 1, false, false%)', '')
+    ret = ret:sub(1, ret:len()-4)
+    ret = ret .. '    TriggerEvent(\'cust_cc:show\')\nend)'
+    inpreview = true
+    load(ret)()
+end)
+
+AddEventHandler('cust_cc:show', function()
+    inpreview = false
+    SetCamActive(data['cam'], true)
+    RenderScriptCams(true, false, 1, true, true)
+end)
 
 exports('execute', function(name, scen, save, exec)
     if type(name) == 'string' then
