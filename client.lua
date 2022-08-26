@@ -148,13 +148,16 @@ local functions = {
             Citizen.CreateThread(function()
                 local pos = data['playercoords']
                 local heading = 0
+                local x = 0.0
                 SendNUIMessage({status = true,t='r',d={{r='x',v=0.0},{r='y',v=0.0},{r='z',v=0.0}}})
                 SendNUIMessage({c='c',d={{r='x',v=coords.x},{r='y',v=coords.y},{r='z',v=coords.z}}})
                 SetEntityAlpha(data['player'], 0, true)
                 SetEntityCompletelyDisableCollision(data['player'], true, false)
                 SetPlayerInvincible(data['playerID'], true)
+                local x,y,z=0.0,0.0,0.0
                 while true do
                     Citizen.Wait(10)
+                    local camRot = GetCamRot(data['cam'], 2)
                     SetEntityCoordsNoOffset(data['player'], pos.x, pos.y, pos.z, 0,0,0)
                     if IsControlPressed(1, 32) then
                         pos = GetOffsetFromEntityInWorldCoords(data['player'], 0.0, types[enum[velocity]], 0.0)
@@ -175,53 +178,42 @@ local functions = {
                             heading = 0
                         end
                         SetEntityHeading(data['player'],heading)
-                        local camRot = GetCamRot(data['cam'], 2)
-                        local rot = GetEntityHeading(data['player'])
-                        SetCamRot(data['cam'], camRot.x, camRot.y, rot, 2)
-                        SendNUIMessage({t='r',d={{r='x',v=camRot.x},{r='y',v=camRot.y},{r='z',v=rot}}})
+                        z = GetEntityHeading(data['player'])
                     elseif IsControlPressed(1, 9) then
                         heading = heading - types[enum[velocity]]
                         if heading > 360 then
                             heading = 0
                         end
                         SetEntityHeading(data['player'],heading)
-                        local camRot = GetCamRot(data['cam'], 2)
-                        local rot = GetEntityHeading(data['player'])
-                        SetCamRot(data['cam'], camRot.x, camRot.y, rot, 2)
-                        SendNUIMessage({t='r',d={{r='x',v=camRot.x},{r='y',v=camRot.y},{r='z',v=rot}}})
-                    elseif IsControlPressed(1, 46) then
-                        local camRot = GetCamRot(data['cam'], 2)
-                        SetCamRot(data['cam'], camRot.x, camRot.y+types[enum[velocity]], camRot.z, 2)
-                        SendNUIMessage({t='r',d={{r='x',v=camRot.x},{r='y',v=camRot.y+types[enum[velocity]]},{r='z',v=camRot.z}}})
+                        z = GetEntityHeading(data['player'])
+                    end
+                    if IsControlPressed(1, 46) then
+                        y=y+types[enum[velocity]]
+                        if y > 180.0 then
+                            y = -180.0
+                        end
                     elseif IsControlPressed(1, 44) then
-                        local camRot = GetCamRot(data['cam'], 2)
-                        SetCamRot(data['cam'], camRot.x, camRot.y-types[enum[velocity]], camRot.z, 2)
-                        SendNUIMessage({t='r',d={{r='x',v=camRot.x},{r='y',v=camRot.y-types[enum[velocity]]},{r='z',v=camRot.z}}})
-                    elseif IsControlPressed(1, 172) then
+                        y=y-types[enum[velocity]]
+                        if y < -180.0 then
+                            y = 180.0
+                        end
+                    end
+                    if IsControlPressed(1, 172) then
                         if not show then
-                            local camRot = GetCamRot(data['cam'], 2)
-                            if camRot.x > 89 then
-                                SetCamRot(data['cam'], camRot.x-types[enum[velocity]], camRot.y, camRot.z, 2)
-                                SendNUIMessage({t='r',d={{r='x',v=camRot.x-types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
-                            else
-                                SetCamRot(data['cam'], camRot.x+types[enum[velocity]], camRot.y, camRot.z, 2)
-                                SendNUIMessage({t='r',d={{r='x',v=camRot.x+types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
-                            end
+                            x=x+types[enum[velocity]]
+                        end
+                        if x > 180.0 then
+                            x = -180.0
                         end
                     elseif IsControlPressed(1, 173) then
                         if not show then
-                            local camRot = GetCamRot(data['cam'], 2)
-                            if camRot.x > 89.0 then
-                                SetCamRot(data['cam'], camRot.x+types[enum[velocity]], camRot.y, camRot.z, 2) 
-                                SendNUIMessage({t='r',d={{r='x',v=camRot.x+types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
-                            else
-                                SetCamRot(data['cam'], camRot.x-types[enum[velocity]], camRot.y, camRot.z, 2) 
-                                SendNUIMessage({t='r',d={{r='x',v=camRot.x-types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
-                            end
+                            x=x-types[enum[velocity]]
+                        end
+                        if x < -180.0 then
+                            x = 180.0
                         end
                     end
                     if (IsDisabledControlJustPressed(1, 177)) or not incam then
-
                         if not inpreview then
                             incam = false
                             SendNUIMessage({status = false})
@@ -239,6 +231,8 @@ local functions = {
                             inpreview = false
                         end
                     end
+                    SetCamRot(data['cam'],x,y,z,2)
+                    SendNUIMessage({t='r',d={{r='x',v=x},{r='y',v=y},{r='z',v=z}}})
                 end
             end)
         end
@@ -434,14 +428,14 @@ local function execute(...)
                 local t = a[i][8]
                 if a[i][7] == 1 then
                     local x,y,z
-                    if vec.z < vec2.z then -- works with 0-360
+                    if vec.z < vec2.z then
                         z = (vec2.z-vec.z)
                     elseif vec2.z < vec.z then
                         z = ((360.0-vec.z)+vec2.z)
                     else
                         z = 0.0
                     end
-                    if vec.y < vec2.y then -- works with -180-180
+                    if vec.y < vec2.y then
                         y = (vec2.y-vec.y)
                     elseif vec2.y < vec.y then
                         y = ((360.0-vec.y)+vec2.y)
@@ -451,7 +445,7 @@ local function execute(...)
                     if string.sub(vec.y, 1, 5) == string.sub(vec2.y, 1, 5) then
                         y = 0.0
                     end
-                    if vec.x < vec2.x then -- works with -90-90 ?!
+                    if vec.x < vec2.x then
                         x = (vec2.x-vec.x)
                     elseif vec2.x < vec.x then
                         x = ((360.0-vec.x)+vec2.x)
@@ -547,6 +541,8 @@ local function execute(...)
         end
     end
     retval = retval:gsub('$Tlocal x2,y2,z2=$X,$Y,$Z\n', '')
+    retval = retval:gsub('if x>360.0 then x=0.0 end if y>360.0 then y=0.0 end', 'if x>180.0 then x=-180.0 end if y>180.0 then y=-180.0 end')
+    retval = retval:gsub('if x<0.0 then x=360.0 end if y<0.0 then y=360.0 end', 'if x<-180.0 then x=180.0 end if y<-180.0 then y=-180.0 end')
     retval = retval .. '$TDetachCam(cam)\n$TDestroyCam(cam)\n$TRenderScriptCams(false, false, 1, false, false)\n$TStopAllScreenEffects()\nend)'
     retval = retval:gsub('$T', '    ')
     if save then
@@ -593,5 +589,40 @@ exports('translate', function(str)
     return name,scen
 end)
 
-local n,s = troc("{ccm:-6.0000014305,-2.9999964237,319.0000000000,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-6.0000009537,-2.9999961853,28.9999980927,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-5.9999990463,-2.9999957085,95.0000000000,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-6.0000119209,24.9999923706,151.9999847412,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-6.0000166893,24.9999790192,115.9999923706,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-6.0000209808,24.9999790192,90.0000000000,734.2835693359,1283.3345947266,361.3008422852,1,1000,1}")
---execute(n,s,true,true)
+local n,s = troc("{ccm:-28.0000000000,0.0000000000,218.0000000000,1674.0568847656,4922.1474609375,53.0395507813,1,1000,1;cmp:-28.0000000000,0.0000000000,330.0000000000,1674.0568847656,4922.1474609375,53.0395507813,1,1000,1;cmp:-28.0000000000,0.0000000000,215.0000152588,1674.0568847656,4922.1474609375,53.0395507813,0,1000,1;cmp:-28.0000000000,0.0000000000,308.5000000000,1674.0568847656,4922.1474609375,53.0395507813,1,1000,1}")
+execute(n,s,true,false)
+
+Citizen.CreateThread(function()
+    local cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA",1674.0568847656,4922.1474609375,53.0395507813,-28.0,0.0,218.0,90.0,false,0)
+    local lasteffect=""
+    SetCamActive(cam, true)
+    RenderScriptCams(true, false, 1, true, true)
+    local time=1000
+    local x,y,z=-28.0,0.0,218.0 
+    for i=1,time do 
+        Wait(1)
+        x=x+(0.0/time) y=y+(0.0/time) z=z+(112.0/time)
+        if x>180.0 then x=-180.0 end if y>180.0 then y=-180.0 end if z>360.0 then z=0.0 end 
+        SetCamRot(cam,x,y,z,2)
+    end
+    local time=1000
+    local x,y,z=-28.0,0.0,330.0 
+    for i=1,time do 
+        Wait(1)
+        x=x-(0.0/time) y=y-(0.0/time) z=z-(114.99998474121/time)
+        if x<-180.0 then x=180.0 end if y<-180.0 then y=-180.0 end if z<0.0 then z=360.0 end 
+        SetCamRot(cam,x,y,z,2)
+    end
+    local time=1000
+    local x,y,z=-28.0,0.0,215.00001525879 
+    for i=1,time do 
+        Wait(1)
+        x=x+(0.0/time) y=y+(0.0/time) z=z+(93.499984741211/time)
+        if x>180.0 then x=-180.0 end if y>180.0 then y=-180.0 end if z>360.0 then z=0.0 end 
+        SetCamRot(cam,x,y,z,2)
+    end
+    DetachCam(cam)
+    DestroyCam(cam)
+    RenderScriptCams(false, false, 1, false, false)
+    StopAllScreenEffects()
+end)
