@@ -438,7 +438,17 @@ local function execute(...)
                     if vec.y < vec2.y then
                         y = (vec2.y-vec.y)
                     elseif vec2.y < vec.y then
-                        y = ((360.0-vec.y)+vec2.y)
+                        if (vec.y<=0.0) then
+                            if vec.y < 0.0 and vec2.y > 0.0 then
+                                y = (tonumber(string.sub(vec.y, 2, string.len(vec.y)))+tonumber(string.sub(vec2.y, 2, string.len(vec2.y))))
+                            elseif vec.y < 0.0 and vec2.y < 0.0 then
+                                y = (tonumber(string.sub(vec2.y, 2, string.len(vec2.y))))-tonumber(string.sub(vec.y, 2, string.len(vec.y)))
+                            end
+                        elseif (vec2.y<0.0) then
+                            y = (tonumber(string.sub(vec2.y, 2, string.len(vec2.y)))+vec.y)
+                        else
+                            y = (vec2.y+vec.y)
+                        end
                     else
                         y = 0.0
                     end
@@ -448,7 +458,17 @@ local function execute(...)
                     if vec.x < vec2.x then
                         x = (vec2.x-vec.x)
                     elseif vec2.x < vec.x then
-                        x = ((360.0-vec.x)+vec2.x)
+                        if (vec.x<=0.0) then
+                            if vec.x < 0.0 and vec2.x > 0.0 then
+                                x = (tonumber(string.sub(vec.x, 2, string.len(vec.x)))+tonumber(string.sub(vec2.x, 2, string.len(vec2.x))))
+                            elseif vec.x < 0.0 and vec.y < 0.0 then
+                                x = (tonumber(string.sub(vec2.x, 2, string.len(vec2.x))))
+                            end
+                        elseif (vec2.x<0.0) then
+                            x = (tonumber(string.sub(vec2.x, 2, string.len(vec2.x)))+vec.x)
+                        else
+                            x = (vec.x-vec2.x)
+                        end
                     else
                         x = 0.0
                     end
@@ -456,10 +476,11 @@ local function execute(...)
                         x = 0.0
                     end
                     if x ~= 0.0 or y ~= 0.0 or z ~= 0.0 then
-                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'+('..x..'/time)','+('..y..'/time)','+('..z..'/time)', templates['+']:format('x', 'x'), (vec.y<vec2.y and templates['-']:format('y', 'y') or templates['+']:format('y', 'y')), templates['+']:format('z', 'z'))
+                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'+('..x..'/time)','+('..y..'/time)','+('..z..'/time)', (vec.x<vec2.x and templates['+']:format('x', 'x') or templates['-']:format('x', 'x')), (vec.y<vec2.y and templates['+']:format('y', 'y') or templates['-']:format('y', 'y')), templates['+']:format('z', 'z'))
                     else
                         retval = retval .. ('$Tlocal time=%s\n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do\n$T$TWait(1)\n'):format(t)
                     end
+                    print(vec.x, vec2.x, x)
                 elseif a[i][7] == 0 then
                     local x,y,z
                     if vec.z < vec2.z then
@@ -470,9 +491,19 @@ local function execute(...)
                         z = 0.0
                     end
                     if vec.y < vec2.y then
-                        y = ((360.0-vec2.y)+vec.y)
+                        y = (vec2.y-vec.y)
                     elseif vec2.y < vec.y then
-                        y = (vec.y-vec2.y)
+                        if (vec.y<=0.0) then
+                            if vec.y < 0.0 and vec2.y > 0.0 then
+                                y = (tonumber(string.sub(vec.y, 2, string.len(vec.y)))+tonumber(string.sub(vec2.y, 2, string.len(vec2.y))))
+                            elseif vec.y < 0.0 and vec2.y < 0.0 then
+                                y = (tonumber(string.sub(vec2.y, 2, string.len(vec2.y))))-tonumber(string.sub(vec.y, 2, string.len(vec.y)))
+                            end
+                        elseif (vec2.y<0.0) then
+                            y = (tonumber(string.sub(vec2.y, 2, string.len(vec2.y)))+vec.y)
+                        else
+                            y = (vec2.y+vec.y)
+                        end
                     else
                         y = 0.0
                     end
@@ -480,9 +511,19 @@ local function execute(...)
                         y = 0.0
                     end
                     if vec.x < vec2.x then
-                        x = ((360.0-vec2.x)+vec.x)
+                        x = (vec2.x-vec.x)
                     elseif vec2.x < vec.x then
-                        x = (vec.x-vec2.x)
+                        if (vec.x<=0.0) then
+                            if vec.x < 0.0 and vec2.x > 0.0 then
+                                x = (tonumber(string.sub(vec.x, 2, string.len(vec.x)))+tonumber(string.sub(vec2.x, 2, string.len(vec2.x))))
+                            elseif vec.x < 0.0 and vec.y < 0.0 then
+                                x = (tonumber(string.sub(vec2.x, 2, string.len(vec2.x))))
+                            end
+                        elseif (vec2.x<0.0) then
+                            x = (tonumber(string.sub(vec2.x, 2, string.len(vec2.x)))+vec.x)
+                        else
+                            x = (vec.x-vec2.x)
+                        end
                     else
                         x = 0.0
                     end
@@ -490,10 +531,11 @@ local function execute(...)
                         x = 0.0
                     end
                     if x ~= 0.0 or y ~= 0.0 or z ~= 0.0 then
-                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'-('..x..'/time)','-('..y..'/time)','-('..z..'/time)', templates['-']:format('x', 'x'), templates['-']:format('y', 'y'), templates['-']:format('z', 'z'))
+                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'-('..x..'/time)','-('..y..'/time)','-('..z..'/time)', (vec.x<vec2.x and templates['+']:format('x', 'x') or templates['-']:format('x', 'x')), (vec.y<vec2.y and templates['+']:format('y', 'y') or templates['-']:format('y', 'y')), templates['-']:format('z', 'z'))
                     else
                         retval = retval .. ('$Tlocal time=%s\n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do\n$T$TWait(1)\n'):format(t)
                     end
+                    print(vec.y, vec2.y, y)
                 end
                 local vec = vector3(a[i-1][4], a[i-1][5], a[i-1][6])
                 local vec2 = vector3(a[i][4], a[i][5], a[i][6])
@@ -587,42 +629,4 @@ end)
 exports('translate', function(str)
     local name,scen = troc(str)
     return name,scen
-end)
-
-local n,s = troc("{ccm:-28.0000000000,0.0000000000,218.0000000000,1674.0568847656,4922.1474609375,53.0395507813,1,1000,1;cmp:-28.0000000000,0.0000000000,330.0000000000,1674.0568847656,4922.1474609375,53.0395507813,1,1000,1;cmp:-28.0000000000,0.0000000000,215.0000152588,1674.0568847656,4922.1474609375,53.0395507813,0,1000,1;cmp:-28.0000000000,0.0000000000,308.5000000000,1674.0568847656,4922.1474609375,53.0395507813,1,1000,1}")
-execute(n,s,true,false)
-
-Citizen.CreateThread(function()
-    local cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA",1674.0568847656,4922.1474609375,53.0395507813,-28.0,0.0,218.0,90.0,false,0)
-    local lasteffect=""
-    SetCamActive(cam, true)
-    RenderScriptCams(true, false, 1, true, true)
-    local time=1000
-    local x,y,z=-28.0,0.0,218.0 
-    for i=1,time do 
-        Wait(1)
-        x=x+(0.0/time) y=y+(0.0/time) z=z+(112.0/time)
-        if x>180.0 then x=-180.0 end if y>180.0 then y=-180.0 end if z>360.0 then z=0.0 end 
-        SetCamRot(cam,x,y,z,2)
-    end
-    local time=1000
-    local x,y,z=-28.0,0.0,330.0 
-    for i=1,time do 
-        Wait(1)
-        x=x-(0.0/time) y=y-(0.0/time) z=z-(114.99998474121/time)
-        if x<-180.0 then x=180.0 end if y<-180.0 then y=-180.0 end if z<0.0 then z=360.0 end 
-        SetCamRot(cam,x,y,z,2)
-    end
-    local time=1000
-    local x,y,z=-28.0,0.0,215.00001525879 
-    for i=1,time do 
-        Wait(1)
-        x=x+(0.0/time) y=y+(0.0/time) z=z+(93.499984741211/time)
-        if x>180.0 then x=-180.0 end if y>180.0 then y=-180.0 end if z>360.0 then z=0.0 end 
-        SetCamRot(cam,x,y,z,2)
-    end
-    DetachCam(cam)
-    DestroyCam(cam)
-    RenderScriptCams(false, false, 1, false, false)
-    StopAllScreenEffects()
 end)
