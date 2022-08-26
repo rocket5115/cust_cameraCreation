@@ -200,14 +200,24 @@ local functions = {
                     elseif IsControlPressed(1, 172) then
                         if not show then
                             local camRot = GetCamRot(data['cam'], 2)
-                            SetCamRot(data['cam'], camRot.x+types[enum[velocity]], camRot.y, camRot.z, 2)
-                            SendNUIMessage({t='r',d={{r='x',v=camRot.x+types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                            if camRot.x > 89 then
+                                SetCamRot(data['cam'], camRot.x-types[enum[velocity]], camRot.y, camRot.z, 2)
+                                SendNUIMessage({t='r',d={{r='x',v=camRot.x-types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                            else
+                                SetCamRot(data['cam'], camRot.x+types[enum[velocity]], camRot.y, camRot.z, 2)
+                                SendNUIMessage({t='r',d={{r='x',v=camRot.x+types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                            end
                         end
                     elseif IsControlPressed(1, 173) then
                         if not show then
                             local camRot = GetCamRot(data['cam'], 2)
-                            SetCamRot(data['cam'], camRot.x-types[enum[velocity]], camRot.y, camRot.z, 2) 
-                            SendNUIMessage({t='r',d={{r='x',v=camRot.x-types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                            if camRot.x > 89.0 then
+                                SetCamRot(data['cam'], camRot.x+types[enum[velocity]], camRot.y, camRot.z, 2) 
+                                SendNUIMessage({t='r',d={{r='x',v=camRot.x+types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                            else
+                                SetCamRot(data['cam'], camRot.x-types[enum[velocity]], camRot.y, camRot.z, 2) 
+                                SendNUIMessage({t='r',d={{r='x',v=camRot.x-types[enum[velocity]]},{r='y',v=camRot.y},{r='z',v=camRot.z}}})
+                            end
                         end
                     end
                     if (IsDisabledControlJustPressed(1, 177)) or not incam then
@@ -424,29 +434,35 @@ local function execute(...)
                 local t = a[i][8]
                 if a[i][7] == 1 then
                     local x,y,z
-                    if vec.z < vec2.z then
+                    if vec.z < vec2.z then -- works with 0-360
                         z = (vec2.z-vec.z)
                     elseif vec2.z < vec.z then
                         z = ((360.0-vec.z)+vec2.z)
                     else
                         z = 0.0
                     end
-                    if vec.y < vec2.y then
+                    if vec.y < vec2.y then -- works with -180-180
                         y = (vec2.y-vec.y)
                     elseif vec2.y < vec.y then
                         y = ((360.0-vec.y)+vec2.y)
                     else
                         y = 0.0
                     end
-                    if vec.x < vec2.x then
+                    if string.sub(vec.y, 1, 5) == string.sub(vec2.y, 1, 5) then
+                        y = 0.0
+                    end
+                    if vec.x < vec2.x then -- works with -90-90 ?!
                         x = (vec2.x-vec.x)
                     elseif vec2.x < vec.x then
                         x = ((360.0-vec.x)+vec2.x)
                     else
                         x = 0.0
                     end
+                    if string.sub(vec.x, 1, 5) == string.sub(vec2.x, 1, 5) then
+                        x = 0.0
+                    end
                     if x ~= 0.0 or y ~= 0.0 or z ~= 0.0 then
-                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'+('..x..'/time)','+('..y..'/time)','+('..z..'/time)', templates['+']:format('x', 'x'), templates['+']:format('y', 'y'), templates['+']:format('z', 'z'))
+                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'+('..x..'/time)','+('..y..'/time)','+('..z..'/time)', templates['+']:format('x', 'x'), (vec.y<vec2.y and templates['-']:format('y', 'y') or templates['+']:format('y', 'y')), templates['+']:format('z', 'z'))
                     else
                         retval = retval .. ('$Tlocal time=%s\n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do\n$T$TWait(1)\n'):format(t)
                     end
@@ -466,6 +482,9 @@ local function execute(...)
                     else
                         y = 0.0
                     end
+                    if string.sub(vec.y, 1, 5) == string.sub(vec2.y, 1, 5) then
+                        y = 0.0
+                    end
                     if vec.x < vec2.x then
                         x = ((360.0-vec2.x)+vec.x)
                     elseif vec2.x < vec.x then
@@ -473,8 +492,11 @@ local function execute(...)
                     else
                         x = 0.0
                     end
+                    if string.sub(vec.x, 1, 5) == string.sub(vec2.x, 1, 5) then
+                        x = 0.0
+                    end
                     if x ~= 0.0 or y ~= 0.0 or z ~= 0.0 then
-                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z $T\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'-('..x..'/time)','-('..y..'/time)','-('..z..'/time)', templates['-']:format('x', 'x'), templates['-']:format('y', 'y'), templates['-']:format('z', 'z'))
+                        retval = retval .. ('$Tlocal time=%s\n$Tlocal x,y,z=%s,%s,%s \n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do \n$T$TWait(1)\n$T$Tx=x%s y=y%s z=z%s\n$T$T%s %s %s \n$T$TSetCamRot(cam,x,y,z,2)\n'):format(t,vec.x,vec.y,vec.z,'-('..x..'/time)','-('..y..'/time)','-('..z..'/time)', templates['-']:format('x', 'x'), templates['-']:format('y', 'y'), templates['-']:format('z', 'z'))
                     else
                         retval = retval .. ('$Tlocal time=%s\n$Tlocal x2,y2,z2=$X,$Y,$Z\n$Tfor i=1,time do\n$T$TWait(1)\n'):format(t)
                     end
@@ -524,6 +546,7 @@ local function execute(...)
             end
         end
     end
+    retval = retval:gsub('$Tlocal x2,y2,z2=$X,$Y,$Z\n', '')
     retval = retval .. '$TDetachCam(cam)\n$TDestroyCam(cam)\n$TRenderScriptCams(false, false, 1, false, false)\n$TStopAllScreenEffects()\nend)'
     retval = retval:gsub('$T', '    ')
     if save then
@@ -540,7 +563,7 @@ RegisterNUICallback('execute', function(data)
     local p1 = data.data[1]:gsub('cmp:', 'ccm:')
     p1 = '{'..p1..data.data[2]:gsub(';','')..'}'
     local name,scen = troc(p1)
-    local ret = execute(name,scen,false,false)
+    local ret = execute(name,scen,true,false)
     ret = ret:gsub('    RenderScriptCams%(false, false, 1, false, false%)', '')
     ret = ret:sub(1, ret:len()-4)
     ret = ret .. '    TriggerEvent(\'cust_cc:show\')\nend)'
@@ -569,3 +592,6 @@ exports('translate', function(str)
     local name,scen = troc(str)
     return name,scen
 end)
+
+local n,s = troc("{ccm:-6.0000014305,-2.9999964237,319.0000000000,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-6.0000009537,-2.9999961853,28.9999980927,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-5.9999990463,-2.9999957085,95.0000000000,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-6.0000119209,24.9999923706,151.9999847412,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-6.0000166893,24.9999790192,115.9999923706,734.2835693359,1283.3345947266,361.3008422852,1,1000,1;cmp:-6.0000209808,24.9999790192,90.0000000000,734.2835693359,1283.3345947266,361.3008422852,1,1000,1}")
+--execute(n,s,true,true)
